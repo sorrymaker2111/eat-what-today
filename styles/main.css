@@ -267,11 +267,27 @@ h1 {
   align-self: center;
 }
 
-.food-legend h3 {
+/* 食物图例标题区 */
+.legend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #fff0f0;
+}
+
+.legend-header h3 {
+  margin: 0;
   color: var(--primary-color);
   font-size: 1.2rem;
-  text-align: center;
+}
+
+.food-legend h3 {
+  margin-bottom: 0;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  text-align: left;
 }
 
 .legend-items {
@@ -422,100 +438,224 @@ h1 {
 /* 编辑模式按钮 */
 .edit-mode-btn {
   margin-left: 10px;
-  padding: 2px 8px;
-  font-size: 0.8rem;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .edit-mode-btn:hover {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: #ff8a8a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.edit-mode-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px var(--shadow-color);
 }
 
 /* 编辑模式的食物项 */
 .legend-item.edit-mode {
   padding: 8px;
-  border: 1px dashed #ddd;
-  background-color: #f9f9f9;
+  border: 1px solid #ffe0e0;
+  background-color: #fff9f9;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.legend-item.edit-mode:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 6px rgba(255, 107, 107, 0.2);
 }
 
 /* 食物编辑区域 */
 .food-edit {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   width: 100%;
 }
 
 /* 食物输入框 */
 .food-input {
   flex: 1;
-  padding: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 6px 10px;
+  border: 1px solid #ffe0e0;
+  border-radius: 20px;
   font-size: 14px;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.food-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
 }
 
 /* 重置按钮 */
 .food-reset-btn {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  background-color: white;
+  border: 1px solid #ffe0e0;
+  border-radius: 50%;
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 18px;
-  color: #666;
+  font-size: 16px;
+  color: var(--primary-color);
+  transition: all 0.3s ease;
 }
 
 .food-reset-btn:hover {
-  background-color: #e0e0e0;
-  color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: white;
+  transform: rotate(180deg);
+  box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 /* 编辑操作区域 */
 .edit-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 15px;
-  gap: 10px;
+  margin-top: 20px;
+  gap: 15px;
 }
 
 /* 保存按钮 */
 .save-btn {
   flex: 1;
-  padding: 8px 15px;
+  padding: 10px 15px;
   background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 25px;
   cursor: pointer;
   font-weight: bold;
+  box-shadow: 0 4px 8px var(--shadow-color);
+  transition: all 0.3s ease;
 }
 
 .save-btn:hover {
   background-color: #ff8a8a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px var(--shadow-color);
+}
+
+.save-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 /* 全部重置按钮 */
 .reset-all-btn {
   flex: 1;
-  padding: 8px 15px;
-  background-color: #f0f0f0;
-  color: #666;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 10px 15px;
+  background-color: white;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 25px;
   cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .reset-all-btn:hover {
-  background-color: #e0e0e0;
+  background-color: #fff0f0;
+  color: #ff4040;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.2);
+}
+
+.reset-all-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(255, 107, 107, 0.2);
+}
+
+/* 提示消息样式 */
+.toast-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 300px;
+  max-width: 80%;
+  padding: 12px 20px;
+  border-radius: 25px;
+  background-color: white;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  opacity: 0.95;
+}
+
+/* 成功提示 */
+.toast-message.success {
+  background-color: #ffeaea;
+  border-left: 4px solid var(--primary-color);
+}
+
+/* 错误提示 */
+.toast-message.error {
+  background-color: #ffeaea;
+  border-left: 4px solid #ff4040;
+}
+
+/* 信息提示 */
+.toast-message.info {
+  background-color: #f0f8ff;
+  border-left: 4px solid #1e90ff;
+}
+
+/* 提示图标 */
+.toast-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.success .toast-icon {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.error .toast-icon {
+  background-color: #ff4040;
+  color: white;
+}
+
+.info .toast-icon {
+  background-color: #1e90ff;
+  color: white;
+}
+
+/* 提示内容 */
+.toast-content {
+  flex: 1;
+  font-size: 16px;
+}
+
+/* 提示动画 */
+.toast-enter-active, .toast-leave-active {
+  transition: all 0.3s;
+}
+
+.toast-enter-from, .toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -30px);
 } 

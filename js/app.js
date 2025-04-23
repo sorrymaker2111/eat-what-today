@@ -60,7 +60,13 @@ const app = Vue.createApp({
       rightParticles: [], // 右侧粒子数组
       animationId: null, // 动画ID
       isEditMode: false, // 是否处于编辑模式
-      tempFoodItems: [] // 临时存储编辑中的食物列表
+      tempFoodItems: [], // 临时存储编辑中的食物列表
+      toast: {
+        show: false,
+        message: '',
+        type: 'success', // success, error, info
+        timer: null
+      }
     };
   },
   mounted() {
@@ -123,6 +129,7 @@ const app = Vue.createApp({
     // 重置单个食物到默认值
     resetFood(index) {
       this.$set(this.foodItems, index, this.defaultFoodItems[index]);
+      this.showToast(`已恢复"${this.defaultFoodItems[index]}"的默认设置`, 'info', 2000);
     },
     
     // 重置所有食物
@@ -131,8 +138,9 @@ const app = Vue.createApp({
         // 复制默认食物列表
         this.foodItems = [...this.defaultFoodItems];
         
-        // 保存更改但不显示保存成功提示
+        // 保存更改并显示提示
         this.saveChangesQuietly();
+        this.showToast('所有食物已恢复默认设置', 'info');
       }
     },
     
@@ -153,13 +161,31 @@ const app = Vue.createApp({
       this.isEditMode = false;
     },
     
+    // 显示提示消息
+    showToast(message, type = 'success', duration = 3000) {
+      // 如果已有计时器，先清除
+      if (this.toast.timer) {
+        clearTimeout(this.toast.timer);
+      }
+      
+      // 设置提示内容
+      this.toast.message = message;
+      this.toast.type = type;
+      this.toast.show = true;
+      
+      // 设置自动关闭
+      this.toast.timer = setTimeout(() => {
+        this.toast.show = false;
+      }, duration);
+    },
+    
     // 保存更改
     saveChanges() {
       // 调用安静保存方法
       this.saveChangesQuietly();
       
-      // 提示保存成功
-      alert('食物列表已保存！');
+      // 使用提示组件显示成功消息
+      this.showToast('食物列表已保存成功！', 'success');
     },
     
     // 加载保存的食物列表
