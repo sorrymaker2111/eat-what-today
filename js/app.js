@@ -40,7 +40,15 @@ const app = Vue.createApp({
       testMode: false,  // 测试模式
       showFireworks: false, // 控制烟花显示
       fireworksTimer: null, // 存储烟花计时器
-      fireworks: null // 存储烟花实例
+      leftFireworksCanvas: null, // 存储左侧烟花Canvas元素
+      rightFireworksCanvas: null, // 存储右侧烟花Canvas元素
+      leftContext: null, // 存储左侧烟花Canvas上下文
+      rightContext: null, // 存储右侧烟花Canvas上下文
+      leftFireworks: [], // 左侧烟花数组
+      leftParticles: [], // 左侧粒子数组
+      rightFireworks: [], // 右侧烟花数组
+      rightParticles: [], // 右侧粒子数组
+      animationId: null // 动画ID
     };
   },
   mounted() {
@@ -79,66 +87,60 @@ const app = Vue.createApp({
     }
   },
   methods: {
-    // 初始化烟花实例
+    // 初始化烟花Canvas
     initFireworks() {
       // 获取烟花容器
       const container = document.getElementById('fireworks-container');
+      if (!container) {
+        console.error('找不到烟花容器！');
+        return;
+      }
       
-      if (!container || typeof Fireworks !== 'function') return;
+      // 清空容器
+      container.innerHTML = '';
       
-      // 创建烟花实例
-      this.fireworks = new Fireworks(container, {
-        autoresize: true,
-        opacity: 0.5,
-        acceleration: 1.05,
-        friction: 0.97,
-        gravity: 1.5,
-        particles: 150,
-        traceLength: 3,
-        traceSpeed: 10,
-        explosion: 5,
-        intensity: 30,
-        flickering: 50,
-        lineStyle: 'round',
-        hue: {
-          min: 0,
-          max: 360
-        },
-        delay: {
-          min: 30,
-          max: 60
-        },
-        rocketsPoint: {
-          min: 0,
-          max: 100
-        },
-        lineWidth: {
-          explosion: {
-            min: 1,
-            max: 3
-          },
-          trace: {
-            min: 1,
-            max: 2
-          }
-        },
-        brightness: {
-          min: 50,
-          max: 80
-        },
-        decay: {
-          min: 0.015,
-          max: 0.03
-        },
-        mouse: {
-          click: false,
-          move: false,
-          max: 1
-        }
+      // 创建左侧烟花Canvas
+      this.leftFireworksCanvas = document.createElement('canvas');
+      this.leftFireworksCanvas.className = 'side-fireworks left-fireworks';
+      this.leftFireworksCanvas.width = window.innerWidth / 4; // 屏幕宽度的1/4
+      this.leftFireworksCanvas.height = window.innerHeight;
+      this.leftFireworksCanvas.style.position = 'absolute';
+      this.leftFireworksCanvas.style.left = '0';
+      this.leftFireworksCanvas.style.top = '0';
+      
+      // 创建右侧烟花Canvas
+      this.rightFireworksCanvas = document.createElement('canvas');
+      this.rightFireworksCanvas.className = 'side-fireworks right-fireworks';
+      this.rightFireworksCanvas.width = window.innerWidth / 4; // 屏幕宽度的1/4
+      this.rightFireworksCanvas.height = window.innerHeight;
+      this.rightFireworksCanvas.style.position = 'absolute';
+      this.rightFireworksCanvas.style.right = '0';
+      this.rightFireworksCanvas.style.top = '0';
+      
+      // 将Canvas添加到容器中
+      container.appendChild(this.leftFireworksCanvas);
+      container.appendChild(this.rightFireworksCanvas);
+      
+      // 获取Canvas上下文
+      this.leftContext = this.leftFireworksCanvas.getContext('2d', { alpha: true });
+      this.rightContext = this.rightFireworksCanvas.getContext('2d', { alpha: true });
+      
+      // 确保使用alpha合成
+      this.leftContext.globalCompositeOperation = 'lighter';
+      this.rightContext.globalCompositeOperation = 'lighter';
+      
+      // 监听窗口大小变化
+      window.addEventListener('resize', () => {
+        this.leftFireworksCanvas.width = window.innerWidth / 4;
+        this.leftFireworksCanvas.height = window.innerHeight;
+        this.leftContext.globalCompositeOperation = 'lighter';
+        
+        this.rightFireworksCanvas.width = window.innerWidth / 4;
+        this.rightFireworksCanvas.height = window.innerHeight;
+        this.rightContext.globalCompositeOperation = 'lighter';
       });
       
-      // 默认不启动烟花
-      this.fireworks.stop();
+      console.log('两侧烟花Canvas初始化成功！');
     },
     
     // 获取食物对应的颜色
@@ -147,27 +149,45 @@ const app = Vue.createApp({
       return wheelColors[index % wheelColors.length];
     },
     
-    // 开始播放烟花动画 - 使用fireworks.js库
+    // 开始播放烟花动画 - 使用Canvas实现
     playFireworks() {
+      console.log('开始播放烟花动画...');
+      
       // 显示烟花容器
       this.showFireworks = true;
       
-      // 如果烟花实例存在则启动烟花
-      if (this.fireworks) {
-        // 启动烟花
-        this.fireworks.start();
-      }
-      
-      // 清除之前的计时器
+      // 清除之前的计时器和动画
       if (this.fireworksTimer) {
         clearTimeout(this.fireworksTimer);
       }
       
+      if (this.animationId) {
+        cancelAnimationFrame(this.animationId);
+      }
+      
+      // 清空烟花和粒子数组
+      this.leftFireworks = [];
+      this.leftParticles = [];
+      this.rightFireworks = [];
+      this.rightParticles = [];
+      
+      // 创建初始烟花
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          this.createFirework('left');
+          this.createFirework('right');
+        }, i * 300); // 每300ms创建一对烟花
+      }
+      
+      // 开始动画循环
+      this.animateFireworks();
+      
       // 设置烟花持续时间
       this.fireworksTimer = setTimeout(() => {
-        // 停止烟花
-        if (this.fireworks) {
-          this.fireworks.stop();
+        // 停止动画
+        if (this.animationId) {
+          cancelAnimationFrame(this.animationId);
+          this.animationId = null;
         }
         
         // 隐藏烟花容器
@@ -175,7 +195,238 @@ const app = Vue.createApp({
       }, 7000); // 烟花显示7秒后消失
     },
     
-    // 旋转转盘的方法 - 全新实现
+    // 创建一个烟花
+    createFirework(side) {
+      const canvas = side === 'left' ? this.leftFireworksCanvas : this.rightFireworksCanvas;
+      const fireworksArray = side === 'left' ? this.leftFireworks : this.rightFireworks;
+      
+      // 随机位置和颜色
+      const x = Math.random() * canvas.width;
+      const y = canvas.height;
+      const targetX = Math.random() * canvas.width;
+      const targetY = canvas.height * (0.2 + Math.random() * 0.5); // 在屏幕20%-70%的高度
+      
+      // 明亮的颜色
+      const hue = Math.random() * 360;
+      const color = `hsl(${hue}, 100%, 60%)`; // 增加亮度
+      const trailColor = `hsl(${hue}, 100%, 80%)`; // 尾迹颜色更亮
+      
+      // 添加到烟花数组
+      fireworksArray.push({
+        x, y, targetX, targetY, color, trailColor,
+        velocity: {
+          x: (targetX - x) * 0.01,
+          y: (targetY - y) * 0.01 - 2
+        },
+        radius: 3, // 增大半径使其更明显
+        alpha: 1,
+        // 添加尾迹数组
+        trail: []
+      });
+    },
+    
+    // 创建爆炸粒子
+    createParticles(x, y, hue, side) {
+      const particlesArray = side === 'left' ? this.leftParticles : this.rightParticles;
+      const particleCount = 40 + Math.floor(Math.random() * 30); // 增加粒子数量
+      
+      // 使用类似的色调但有变化的颜色
+      for (let i = 0; i < particleCount; i++) {
+        // 随机角度和速度
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1 + Math.random() * 3;
+        
+        // 在基础色调上随机变化
+        const colorHue = hue + Math.random() * 30 - 15;
+        const saturation = 90 + Math.random() * 10; // 90%-100%
+        const lightness = 50 + Math.random() * 20; // 50%-70%
+        
+        const color = `hsl(${colorHue}, ${saturation}%, ${lightness}%)`;
+        
+        particlesArray.push({
+          x, y, 
+          color,
+          velocity: {
+            x: Math.cos(angle) * speed,
+            y: Math.sin(angle) * speed
+          },
+          radius: 2 + Math.random() * 1.5, // 增大粒子尺寸
+          alpha: 1,
+          // 添加尾迹数组
+          trail: [],
+          // 添加闪烁效果
+          flicker: Math.random() > 0.5,
+          flickerRate: 0.05 + Math.random() * 0.1
+        });
+      }
+    },
+    
+    // 动画循环
+    animateFireworks() {
+      // 清除左侧画布 - 使用完全透明的背景
+      this.leftContext.clearRect(0, 0, this.leftFireworksCanvas.width, this.leftFireworksCanvas.height);
+      
+      // 清除右侧画布 - 使用完全透明的背景
+      this.rightContext.clearRect(0, 0, this.rightFireworksCanvas.width, this.rightFireworksCanvas.height);
+      
+      // 更新和绘制左侧烟花
+      this.updateFireworks(this.leftFireworks, this.leftParticles, this.leftContext, 'left');
+      
+      // 更新和绘制右侧烟花
+      this.updateFireworks(this.rightFireworks, this.rightParticles, this.rightContext, 'right');
+      
+      // 继续动画循环
+      this.animationId = requestAnimationFrame(() => this.animateFireworks());
+    },
+    
+    // 更新和绘制烟花
+    updateFireworks(fireworks, particles, context, side) {
+      // 更新和绘制烟花
+      for (let i = 0; i < fireworks.length; i++) {
+        const firework = fireworks[i];
+        
+        // 保存旧位置到尾迹数组
+        firework.trail.push({
+          x: firework.x,
+          y: firework.y,
+          alpha: 1
+        });
+        
+        // 限制尾迹长度
+        if (firework.trail.length > 5) {
+          firework.trail.shift();
+        }
+        
+        // 更新位置
+        firework.x += firework.velocity.x;
+        firework.y += firework.velocity.y;
+        
+        // 添加重力
+        firework.velocity.y += 0.05;
+        
+        // 绘制尾迹
+        for (let j = 0; j < firework.trail.length; j++) {
+          const trailPoint = firework.trail[j];
+          const trailAlpha = trailPoint.alpha * (j / firework.trail.length);
+          
+          context.beginPath();
+          context.arc(trailPoint.x, trailPoint.y, firework.radius * 0.7, 0, Math.PI * 2);
+          context.fillStyle = firework.trailColor.replace(')', `, ${trailAlpha})`).replace('hsl', 'hsla');
+          context.fill();
+          
+          // 随时间减少透明度
+          trailPoint.alpha *= 0.8;
+        }
+        
+        // 绘制烟花
+        context.beginPath();
+        context.arc(firework.x, firework.y, firework.radius, 0, Math.PI * 2);
+        context.fillStyle = firework.color;
+        context.fill();
+        
+        // 检查是否到达目标位置
+        if (firework.velocity.y >= 0) {
+          // 获取色调值
+          const hue = parseInt(firework.color.match(/\d+/)[0]);
+          
+          // 创建爆炸粒子
+          this.createParticles(firework.x, firework.y, hue, side);
+          
+          // 从数组中移除烟花
+          fireworks.splice(i, 1);
+          i--;
+          
+          // 随机创建新的烟花
+          if (Math.random() < 0.3) {
+            this.createFirework(side);
+          }
+        }
+      }
+      
+      // 更新和绘制粒子
+      for (let i = 0; i < particles.length; i++) {
+        const particle = particles[i];
+        
+        // 保存旧位置到尾迹数组
+        particle.trail.push({
+          x: particle.x,
+          y: particle.y,
+          alpha: particle.alpha * 0.7
+        });
+        
+        // 限制尾迹长度
+        if (particle.trail.length > 3) {
+          particle.trail.shift();
+        }
+        
+        // 更新位置
+        particle.x += particle.velocity.x;
+        particle.y += particle.velocity.y;
+        
+        // 添加重力和阻力
+        particle.velocity.y += 0.1;
+        particle.velocity.x *= 0.99;
+        particle.velocity.y *= 0.99;
+        
+        // 减小透明度和半径
+        particle.alpha -= 0.02; // 加快消失速度
+        particle.radius *= 0.97;
+        
+        // 处理闪烁效果
+        if (particle.flicker) {
+          particle.alpha = Math.max(0, particle.alpha * (0.9 + Math.random() * 0.2));
+        }
+        
+        // 绘制尾迹
+        for (let j = 0; j < particle.trail.length; j++) {
+          const trailPoint = particle.trail[j];
+          const trailAlpha = trailPoint.alpha * (j / particle.trail.length);
+          
+          if (trailAlpha > 0.01) {
+            context.beginPath();
+            context.arc(trailPoint.x, trailPoint.y, particle.radius * 0.6, 0, Math.PI * 2);
+            context.fillStyle = particle.color.replace(')', `, ${trailAlpha})`).replace('hsl', 'hsla');
+            context.fill();
+          }
+        }
+        
+        // 绘制粒子
+        context.beginPath();
+        context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        context.fillStyle = particle.color.replace(')', `, ${particle.alpha})`).replace('hsl', 'hsla');
+        context.fill();
+        
+        // 如果粒子消失，从数组中移除
+        if (particle.alpha <= 0.01 || particle.radius <= 0.1) {
+          particles.splice(i, 1);
+          i--;
+        }
+      }
+    },
+    
+    // hexToRgb方法
+    hexToRgb(hex) {
+      // 处理hsl格式的颜色
+      if (hex.startsWith('hsl')) {
+        return '255, 255, 255'; // 简化处理，返回白色
+      }
+      
+      // 将#去掉
+      hex = hex.replace('#', '');
+      
+      // 处理简写的hex
+      if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      }
+      
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      
+      return `${r}, ${g}, ${b}`;
+    },
+    
+    // 旋转转盘的方法 - 保持不变
     spinWheel() {
       if (this.isSpinning) return;
       
@@ -184,9 +435,10 @@ const app = Vue.createApp({
       this.selectedIndex = -1; // 重置选中状态
       this.showFireworks = false; // 重置烟花状态
       
-      // 如果烟花实例存在，先停止烟花
-      if (this.fireworks) {
-        this.fireworks.stop();
+      // 停止任何现有的烟花动画
+      if (this.animationId) {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
       }
       
       // ---------- 基本参数定义 ----------
@@ -274,6 +526,7 @@ const app = Vue.createApp({
           this.showResult = true;
           this.selectedIndex = finalFoodIndex; // 设置选中的索引，用于高亮显示
           
+          console.log('转盘旋转结束，准备显示烟花...');
           // 播放烟花动画
           this.playFireworks();
         }, 4000); // 与CSS中的transition时间匹配
@@ -283,4 +536,4 @@ const app = Vue.createApp({
 });
 
 // 挂载Vue应用
-app.mount('#app'); 
+app.mount('#app');
