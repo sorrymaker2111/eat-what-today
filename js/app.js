@@ -590,6 +590,19 @@ const app = Vue.createApp({
       return `${r}, ${g}, ${b}`;
     },
     
+    // 播放man.mp3音频的方法
+    playManAudio() {
+      const audio = document.getElementById('manAudio');
+      if (audio) {
+        // 重置音频播放位置
+        audio.currentTime = 0;
+        // 播放音频
+        audio.play().catch(err => {
+          console.error('音频播放失败:', err);
+        });
+      }
+    },
+    
     // 旋转转盘的方法 - 保持不变
     spinWheel() {
       if (this.isSpinning) return;
@@ -693,6 +706,9 @@ const app = Vue.createApp({
           console.log('转盘旋转结束，准备显示烟花...');
           // 播放烟花动画
           this.playFireworks();
+          
+          // 播放音频
+          this.playManAudio();
         }, 4000); // 与CSS中的transition时间匹配
       }, 100);
     }

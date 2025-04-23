@@ -12,7 +12,7 @@
 <body>
     <div id="app">
         <div class="container">
-            <h1>今天吃什么？</h1>
+            <h1>牢大，今天吃什么？</h1>
             
             <!-- 专业烟花动画容器 - 覆盖整个页面 -->
             <div id="fireworks-container" class="fireworks-container" v-show="showFireworks"></div>
@@ -93,9 +93,12 @@
             
             <transition name="fade">
                 <div class="result" v-if="showResult">
-                    今天就吃：{{ selectedFood }}！
+                    <img src="man.png" alt="man" class="result-icon">  man!今天就吃：{{ selectedFood }}！
                 </div>
             </transition>
+            
+            <!-- 添加音频元素 -->
+            <audio id="manAudio" src="man.mp3" preload="auto"></audio>
         </div>
     </div>
     

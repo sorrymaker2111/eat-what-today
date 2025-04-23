@@ -198,6 +198,16 @@ h1 {
   color: var(--primary-color);
   font-weight: bold;
   height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-icon {
+  height: 1.8rem;
+  width: auto;
+  margin-right: 5px;
+  vertical-align: middle;
 }
 
 .fade-enter-active, .fade-leave-active {
