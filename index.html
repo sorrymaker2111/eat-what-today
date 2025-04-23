@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天吃什么？</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入fireworks.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>今天吃什么？</h1>
+            
+            <!-- 专业烟花动画容器 - 覆盖整个页面 -->
+            <div id="fireworks-container" class="fireworks-container" v-show="showFireworks"></div>
+            
+            <div class="wheel-section">
+                <div class="wheel-container">
+                    <!-- 指针 -->
+                    <div class="pointer"></div>
+                    
+                    <!-- 转盘 -->
+                    <div class="wheel" :class="{ spinning: isSpinning }">
+                        <!-- 分割线 -->
+                        <div v-for="n in foodItems.length" :key="`line-${n}`" 
+                             class="divider-line"
+                             :style="{ transform: `rotate(${(n-1) * (360/foodItems.length)}deg)` }">
+                        </div>
+                        
+                        <!-- 已移除食物项的文字显示 -->
+                    </div>
+                    
+                    <!-- 中心点标记 -->
+                    <div class="center-point"></div>
+                </div>
+                
+                <!-- 食物图例列表 -->
+                <div class="food-legend">
+                    <h3>食物列表</h3>
+                    <div class="legend-items">
+                        <div v-for="(item, index) in foodItems" 
+                             :key="index" 
+                             class="legend-item"
+                             :class="{ 'highlight': selectedIndex === index }">
+                            <div class="color-block" :style="{ 'background-color': getFoodColor(index) }"></div>
+                            <span>{{ item }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn" @click="spinWheel" :disabled="isSpinning">
+                {{ isSpinning ? '选择中...' : '点击选择' }}
+            </button>
+            
+            <transition name="fade">
+                <div class="result" v-if="showResult">
+                    今天就吃：{{ selectedFood }}！
+                </div>
+            </transition>
+        </div>
+    </div>
+    
+    <script src="js/app.js"></script>
+</body>
+</html> 
