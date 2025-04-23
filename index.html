@@ -67,11 +67,12 @@
                             <div v-else class="food-edit">
                                 <input 
                                     type="text" 
-                                    :value="item"
-                                    @input="updateFood(index, $event.target.value)"
+                                    v-model="foodItems[index]"
                                     class="food-input"
                                     :placeholder="'请输入食物名称'"
-                                    allow-empty
+                                    @focus="handleInputFocus"
+                                    @blur="handleInputBlur"
+                                    :data-index="index"
                                 />
                                 <button class="food-reset-btn" @click="resetFood(index)" title="恢复默认">↺</button>
                             </div>

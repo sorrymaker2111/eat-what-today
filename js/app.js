@@ -39,12 +39,13 @@ const wheelColors = [
 // 创建Vue应用
 const app = Vue.createApp({
   data() {
+    // 确保使用函数返回，避免数据共享问题
     return {
       isSpinning: false,
       selectedFood: '',
       showResult: false,
-      foodItems: foodItems,
-      defaultFoodItems: defaultFoodItems, // 添加默认食物列表引用
+      foodItems: [], // 先使用空数组，在created钩子中初始化
+      defaultFoodItems: [], // 先使用空数组，在created钩子中初始化
       currentRotation: 0, // 当前转盘旋转角度
       selectedIndex: -1, // 当前选中的食物索引
       testMode: false,  // 测试模式
@@ -66,15 +67,41 @@ const app = Vue.createApp({
         message: '',
         type: 'success', // success, error, info
         timer: null
-      }
+      },
+      isInitialized: false // 跟踪是否已初始化
     };
+  },
+  created() {
+    // 在组件创建时确保数据已正确响应式化
+    this.defaultFoodItems = [...defaultFoodItems];
+    
+    // 从localStorage加载保存的食物列表或使用默认值
+    const savedItems = localStorage.getItem('foodItems');
+    if (savedItems) {
+      try {
+        const parsed = JSON.parse(savedItems);
+        if (Array.isArray(parsed) && parsed.length === this.defaultFoodItems.length) {
+          this.foodItems = parsed;
+        } else {
+          this.foodItems = [...this.defaultFoodItems]; 
+        }
+      } catch (e) {
+        console.error('加载保存的食物列表失败:', e);
+        this.foodItems = [...this.defaultFoodItems];
+      }
+    } else {
+      this.foodItems = [...this.defaultFoodItems];
+    }
+    
+    // 创建临时食物列表副本
+    this.tempFoodItems = JSON.parse(JSON.stringify(this.foodItems));
+    
+    // 标记为已初始化
+    this.isInitialized = true;
   },
   mounted() {
     // 当组件挂载完成后，初始化烟花实例
     this.initFireworks();
-    
-    // 从localStorage加载保存的食物列表
-    this.loadSavedFoods();
   },
   computed: {
     // 为每个食物计算角度和样式
@@ -108,27 +135,48 @@ const app = Vue.createApp({
     }
   },
   methods: {
+    // 处理输入框获得焦点
+    handleInputFocus(event) {
+      // 确保在获得焦点时选中所有文本，方便编辑
+      setTimeout(() => {
+        event.target.select();
+      }, 0);
+    },
+    
+    // 处理输入框失去焦点
+    handleInputBlur(event) {
+      // 确保值不为空，如果为空则触发重置
+      const index = parseInt(event.target.dataset.index || 0);
+      if (!event.target.value || event.target.value.trim() === '') {
+        this.foodItems[index] = `食物${index + 1}`;
+      }
+    },
+    
     // 切换编辑模式
     toggleEditMode() {
       if (!this.isEditMode) {
         // 进入编辑模式前，保存当前食物列表的副本
-        this.tempFoodItems = [...this.foodItems];
+        this.tempFoodItems = JSON.parse(JSON.stringify(this.foodItems));
+        
+        // 确保所有食物项都有值
+        for (let i = 0; i < this.foodItems.length; i++) {
+          if (!this.foodItems[i] || this.foodItems[i].trim() === '') {
+            this.foodItems[i] = `食物${i + 1}`;
+          }
+        }
+        
         this.isEditMode = true;
       } else {
         // 离开编辑模式，恢复到编辑前的状态（如果未保存）
+        this.foodItems = JSON.parse(JSON.stringify(this.tempFoodItems));
         this.isEditMode = false;
       }
     },
     
-    // 更新某个食物项
-    updateFood(index, newValue) {
-      // 直接修改foodItems中的对应项，不再自动填充默认值
-      this.$set(this.foodItems, index, newValue);
-    },
-    
     // 重置单个食物到默认值
     resetFood(index) {
-      this.$set(this.foodItems, index, this.defaultFoodItems[index]);
+      // 直接修改数组项
+      this.foodItems[index] = this.defaultFoodItems[index];
       this.showToast(`已恢复"${this.defaultFoodItems[index]}"的默认设置`, 'info', 2000);
     },
     
