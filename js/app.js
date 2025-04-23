@@ -1,10 +1,19 @@
-// 食物列表
-const foodItems = [
+// 默认食物列表 - 作为初始值和重置时使用
+const defaultFoodItems = [
   '火锅', '烤肉', '麻辣烫', '炒饭', '炸鸡', 
   '寿司', '披萨', '汉堡', '面条', '拉面', 
   '饺子', '煎饼', '盖浇饭', '沙拉', '三明治', 
   '烧烤'
 ];
+
+// 获取存储的食物列表或使用默认值
+const getSavedFoodItems = () => {
+  const savedItems = localStorage.getItem('foodItems');
+  return savedItems ? JSON.parse(savedItems) : [...defaultFoodItems];
+};
+
+// 食物列表
+const foodItems = getSavedFoodItems();
 
 // 转盘颜色数组，与CSS中的conic-gradient颜色完全保持一致
 // 每个颜色对应1个食物，一一对应
@@ -35,6 +44,7 @@ const app = Vue.createApp({
       selectedFood: '',
       showResult: false,
       foodItems: foodItems,
+      defaultFoodItems: defaultFoodItems, // 添加默认食物列表引用
       currentRotation: 0, // 当前转盘旋转角度
       selectedIndex: -1, // 当前选中的食物索引
       testMode: false,  // 测试模式
@@ -48,12 +58,17 @@ const app = Vue.createApp({
       leftParticles: [], // 左侧粒子数组
       rightFireworks: [], // 右侧烟花数组
       rightParticles: [], // 右侧粒子数组
-      animationId: null // 动画ID
+      animationId: null, // 动画ID
+      isEditMode: false, // 是否处于编辑模式
+      tempFoodItems: [] // 临时存储编辑中的食物列表
     };
   },
   mounted() {
     // 当组件挂载完成后，初始化烟花实例
     this.initFireworks();
+    
+    // 从localStorage加载保存的食物列表
+    this.loadSavedFoods();
   },
   computed: {
     // 为每个食物计算角度和样式
@@ -87,6 +102,81 @@ const app = Vue.createApp({
     }
   },
   methods: {
+    // 切换编辑模式
+    toggleEditMode() {
+      if (!this.isEditMode) {
+        // 进入编辑模式前，保存当前食物列表的副本
+        this.tempFoodItems = [...this.foodItems];
+        this.isEditMode = true;
+      } else {
+        // 离开编辑模式，恢复到编辑前的状态（如果未保存）
+        this.isEditMode = false;
+      }
+    },
+    
+    // 更新某个食物项
+    updateFood(index, newValue) {
+      // 直接修改foodItems中的对应项，不再自动填充默认值
+      this.$set(this.foodItems, index, newValue);
+    },
+    
+    // 重置单个食物到默认值
+    resetFood(index) {
+      this.$set(this.foodItems, index, this.defaultFoodItems[index]);
+    },
+    
+    // 重置所有食物
+    resetAllFoods() {
+      if (confirm('确定要重置所有食物到默认值吗？')) {
+        // 复制默认食物列表
+        this.foodItems = [...this.defaultFoodItems];
+        
+        // 保存更改但不显示保存成功提示
+        this.saveChangesQuietly();
+      }
+    },
+    
+    // 保存更改但不显示提示
+    saveChangesQuietly() {
+      // 在保存前检查并处理空值
+      for (let i = 0; i < this.foodItems.length; i++) {
+        if (!this.foodItems[i] || this.foodItems[i].trim() === '') {
+          // 如果为空，则使用默认值
+          this.$set(this.foodItems, i, `食物${i + 1}`);
+        }
+      }
+      
+      // 将当前食物列表保存到localStorage
+      localStorage.setItem('foodItems', JSON.stringify(this.foodItems));
+      
+      // 退出编辑模式
+      this.isEditMode = false;
+    },
+    
+    // 保存更改
+    saveChanges() {
+      // 调用安静保存方法
+      this.saveChangesQuietly();
+      
+      // 提示保存成功
+      alert('食物列表已保存！');
+    },
+    
+    // 加载保存的食物列表
+    loadSavedFoods() {
+      const savedItems = localStorage.getItem('foodItems');
+      if (savedItems) {
+        try {
+          const parsed = JSON.parse(savedItems);
+          if (Array.isArray(parsed) && parsed.length === this.defaultFoodItems.length) {
+            this.foodItems = parsed;
+          }
+        } catch (e) {
+          console.error('加载保存的食物列表失败:', e);
+        }
+      }
+    },
+    
     // 初始化烟花Canvas
     initFireworks() {
       // 获取烟花容器
@@ -534,6 +624,16 @@ const app = Vue.createApp({
     }
   }
 });
+
+// Vue 3的全局API改变，需要添加一个对$set的替代实现
+app.config.globalProperties.$set = function(obj, key, value) {
+  // 由于Vue 3的响应式系统不再需要$set，直接赋值即可
+  if (Array.isArray(obj)) {
+    obj.splice(key, 1, value);
+  } else {
+    obj[key] = value;
+  }
+};
 
 // 挂载Vue应用
 app.mount('#app');

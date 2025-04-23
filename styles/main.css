@@ -417,4 +417,105 @@ h1 {
       opacity: 0;
     }
   }
+}
+
+/* 编辑模式按钮 */
+.edit-mode-btn {
+  margin-left: 10px;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-mode-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* 编辑模式的食物项 */
+.legend-item.edit-mode {
+  padding: 8px;
+  border: 1px dashed #ddd;
+  background-color: #f9f9f9;
+}
+
+/* 食物编辑区域 */
+.food-edit {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+}
+
+/* 食物输入框 */
+.food-input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* 重置按钮 */
+.food-reset-btn {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: #666;
+}
+
+.food-reset-btn:hover {
+  background-color: #e0e0e0;
+  color: var(--primary-color);
+}
+
+/* 编辑操作区域 */
+.edit-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  gap: 10px;
+}
+
+/* 保存按钮 */
+.save-btn {
+  flex: 1;
+  padding: 8px 15px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.save-btn:hover {
+  background-color: #ff8a8a;
+}
+
+/* 全部重置按钮 */
+.reset-all-btn {
+  flex: 1;
+  padding: 8px 15px;
+  background-color: #f0f0f0;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.reset-all-btn:hover {
+  background-color: #e0e0e0;
+  color: #333;
 } 
