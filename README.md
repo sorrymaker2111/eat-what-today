@@ -1,85 +1,59 @@
 # 今天吃什么？
 
-一个有趣的静态网页应用，帮助你决定今天吃什么。转盘随机选择，给你惊喜。
+一个使用 Next.js、TypeScript 和 TailwindCSS 重构的随机吃饭决策器。页面被重新设计为“夜市抽签机”：转盘、候选菜牌、结果仪式感、烟花和音效都集中在首屏。
 
-## 在线体验
+## 功能
 
-🔗 [点击这里在线体验](https://man-eat-what-today.pages.dev/)
-
-## 功能特点
-
-- 点击按钮，转盘开始旋转，随机选择食物
-- 动画流畅，界面美观，配色精致
-- 结果公布时播放烟花特效和音效，增强用户体验
-- 食物列表可在界面上直接编辑、保存和重置
-- 所有设置保存在浏览器本地存储，无需重新设置
-- 响应式设计，适配移动设备
-- 图文结合的结果展示，更加生动
+- 随机转盘选择今天吃什么
+- 候选菜牌支持新增、删除、编辑、单项恢复和全部恢复默认
+- 候选列表保存在浏览器 localStorage
+- 抽中结果高亮，并保留最近 5 次结果
+- 结果展示时播放 `man.mp3` 并显示 `man.png`
+- Canvas 烟花动画在结果公布后播放
+- 响应式布局，适配桌面和移动端
 
 ## 技术栈
 
-- Vue.js 3 (使用 CDN 引入)
-- 原生 Canvas API 实现烟花特效
-- 纯 CSS 实现的动画和过渡效果
-- 原生 JavaScript
-- HTML5 音频 API
-- LocalStorage 本地存储
+- Next.js App Router
+- React 19
+- TypeScript
+- TailwindCSS
+- Node test runner + tsx
 
-## 文件结构
+## 本地运行
 
-```
-eat-what-today/
-  ├── index.html            # 主页面
-  ├── js/
-  │   └── app.js            # 主要逻辑代码
-  ├── styles/
-  │   └── main.css          # 样式文件
-  ├── man.png               # 结果显示图片
-  ├── man.mp3               # 结果显示音效
-  └── README.md             # 项目说明
+```bash
+npm install
+npm run dev
 ```
 
-## 如何使用
+默认访问地址为 `http://localhost:3000`。
 
-1. 直接打开`index.html`文件即可使用
-2. 点击"点击选择"按钮，转盘开始旋转
-3. 等待转盘停止后，会显示今天应该吃什么，并伴随烟花特效和音效
-4. 点击"编辑"按钮可以修改食物列表，完成后点击"保存"
+## 验证
 
-## 食物编辑功能
+```bash
+npm test
+npm run lint
+npm run build
+```
 
-应用提供了直接在界面上编辑食物列表的功能：
+## 主要结构
 
-1. 点击右侧列表顶部的"编辑"按钮进入编辑模式
-2. 可以直接修改每一项食物的名称
-3. 可以点击单个食物旁的"↺"按钮恢复该食物的默认值
-4. 点击"全部重置"可恢复所有食物为默认值
-5. 点击"保存"按钮保存更改并退出编辑模式
-6. 点击"完成"按钮不保存更改并退出编辑模式
-
-## 特效说明
-
-- **烟花特效**：使用 Canvas API 在结果显示时绘制烟花动画
-- **过渡动画**：使用 Vue 的 transition 组件实现平滑的过渡效果
-- **音效**：结果显示时播放音效，增强用户体验
-- **图片**：结果显示时配合显示图片，更加生动
-
-## 本地部署
-
-这是一个纯静态网页，无需服务器，可以通过以下方式使用：
-
-1. 直接在浏览器中打开`index.html`
-2. 使用任何静态文件服务器托管这些文件
-3. 上传到 GitHub Pages 等静态网站托管服务
-
-## 在线演示
-
-项目已部署在 Cloudflare Pages 平台：
-
-- 体验地址：[https://man-eat-what-today.pages.dev/](https://man-eat-what-today.pages.dev/)
-- 无需安装，随时随地帮你决定吃什么
-
-## 浏览器兼容性
-
-- 支持所有现代浏览器（Chrome、Firefox、Safari、Edge 等）
-- 不支持 IE 浏览器
+```text
+app/
+  layout.tsx
+  page.tsx
+  globals.css
+components/
+  food-decider.tsx
+  fireworks-canvas.tsx
+  toast.tsx
+hooks/
+  use-local-foods.ts
+lib/
+  foods.ts
+  spin.ts
+public/
+  man.png
+  man.mp3
+```
